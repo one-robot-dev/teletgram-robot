@@ -7,7 +7,9 @@ import com.example.demo.beans.robotupdate.Message;
 import com.example.demo.beans.robotupdate.Update;
 import com.example.demo.beans.robotupdate.User;
 import com.example.demo.config.Configs;
+import com.example.demo.service.GroupFunctionService;
 import com.example.demo.utils.DoRequestUtil;
+import com.example.demo.utils.iologic.IOLogicExecuteUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -30,6 +32,9 @@ public class KeywordReplyHandler implements RobotGroupUpdatesHandler<KeywordRepl
 
     @Autowired
     private Configs configs;
+
+    @Autowired
+    private GroupFunctionService groupFunctionService;
 
     @Override
     public void handle(Update data, KeywordReplyParam param) throws IOException {
@@ -70,13 +75,16 @@ public class KeywordReplyHandler implements RobotGroupUpdatesHandler<KeywordRepl
         if (StringUtils.isNotBlank(reply.getReplyMarkUp())) {
             urlParam = urlParam + "&reply_markup=" + URLEncoder.encode(reply.getReplyMarkUp(), StandardCharsets.UTF_8);
         }
-        ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
-        DoRequestUtil.request(request);
+        String url = configs.sendMsgUrl + urlParam;
+        IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
+            ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(url), HttpMethod.GET);
+            DoRequestUtil.request(request);
+        });
     }
 
     @Override
-    public String getType() {
-        return "keywordReply";
+    public GroupHandlerType getType() {
+        return GroupHandlerType.KEYWORD_REPLY;
     }
 
     @Override
@@ -85,5 +93,10 @@ public class KeywordReplyHandler implements RobotGroupUpdatesHandler<KeywordRepl
             return null;
         }
         return JSON.parseObject(param, KeywordReplyParam.class);
+    }
+
+    @Override
+    public boolean isOpen(long groupId) {
+        return groupFunctionService.isFunctionOpen(groupId, getType().type());
     }
 }

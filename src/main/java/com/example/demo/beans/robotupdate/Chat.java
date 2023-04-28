@@ -21,4 +21,8 @@ public class Chat {
     public boolean isSuperGroup() {
         return ChatType.SUPER_GROUP.getType().equals(type);
     }
+
+    public boolean isPrivate() {
+        return ChatType.PRIVATE.getType().equals(type);
+    }
 }

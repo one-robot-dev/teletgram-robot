@@ -7,7 +7,9 @@ import com.example.demo.config.Configs;
 import com.example.demo.db.dao.UserInfoModelMapper;
 import com.example.demo.db.entity.UserInfoModel;
 import com.example.demo.db.entity.UserInfoModelKey;
+import com.example.demo.service.GroupFunctionService;
 import com.example.demo.utils.DoRequestUtil;
+import com.example.demo.utils.iologic.IOLogicExecuteUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -27,6 +29,9 @@ import java.nio.charset.StandardCharsets;
 public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserInfoChangeParam> {
 
     private UserInfoModelMapper userInfoModelMapper;
+
+    @Autowired
+    private GroupFunctionService groupFunctionService;
 
     @Autowired
     private Configs configs;
@@ -79,10 +84,12 @@ public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserIn
                 dbModel.setFirstName(from.getFirstName());
                 dbModel.setLastName(from.getLastName());
                 //发送改名的提示
-                String msg = URLEncoder.encode(param.getChangeUserNameTip().replace("{new}", newName).replace("{old}", oldName), StandardCharsets.UTF_8);
-                String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
-                ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
-                DoRequestUtil.request(request);
+                IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
+                    String msg = URLEncoder.encode(param.getChangeUserNameTip().replace("{new}", newName).replace("{old}", oldName), StandardCharsets.UTF_8);
+                    String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
+                    ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
+                    DoRequestUtil.request(request);
+                });
                 haveUpdate = true;
             }
             String oldUserName = StringUtils.defaultIfEmpty(dbModel.getUserName(), "");
@@ -90,10 +97,12 @@ public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserIn
             if (!oldUserName.equals(newUserName)) {
                 dbModel.setUserName(newUserName);
                 //发送改唯一名的提示
-                String msg = URLEncoder.encode(param.getChangeUserNameTip().replace("{new}", newUserName).replace("{old}", oldUserName), StandardCharsets.UTF_8);
-                String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
-                ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
-                DoRequestUtil.request(request);
+                IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
+                    String msg = URLEncoder.encode(param.getChangeUserNameTip().replace("{new}", newUserName).replace("{old}", oldUserName), StandardCharsets.UTF_8);
+                    String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
+                    ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
+                    DoRequestUtil.request(request);
+                });
                 haveUpdate = true;
             }
             if (haveUpdate) {
@@ -104,8 +113,8 @@ public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserIn
     }
 
     @Override
-    public String getType() {
-        return "userInfoChange";
+    public GroupHandlerType getType() {
+        return GroupHandlerType.USER_INFO_CHANGE;
     }
 
     @Override
@@ -114,5 +123,10 @@ public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserIn
             return null;
         }
         return JSON.parseObject(param, UserInfoChangeParam.class);
+    }
+
+    @Override
+    public boolean isOpen(long groupId) {
+        return groupFunctionService.isFunctionOpen(groupId, getType().type());
     }
 }

@@ -7,7 +7,9 @@ import com.example.demo.config.Configs;
 import com.example.demo.db.dao.UserInfoModelMapper;
 import com.example.demo.db.entity.UserInfoModel;
 import com.example.demo.db.entity.UserInfoModelKey;
+import com.example.demo.service.GroupFunctionService;
 import com.example.demo.utils.DoRequestUtil;
+import com.example.demo.utils.iologic.IOLogicExecuteUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -32,10 +34,13 @@ public class GroupWelcomeHandler implements RobotGroupUpdatesHandler<GroupWelcom
     private UserInfoModelMapper userInfoModelMapper;
 
     @Autowired
+    private GroupFunctionService groupFunctionService;
+
+    @Autowired
     private Configs configs;
 
     @Override
-    public void handle(Update data, GroupWelcomeParam param) throws IOException {
+    public void handle(Update data, GroupWelcomeParam param) {
         //获取加入信息
         Message message = data.getMessage();
         if (message == null) {
@@ -74,15 +79,17 @@ public class GroupWelcomeHandler implements RobotGroupUpdatesHandler<GroupWelcom
             }
         });
         //根据功能设置，提示欢迎语
-        String msg = URLEncoder.encode(param.getWelcomeTip().replace("{groupTitle}", chat.getTitle()).replace("{groupUserName}", chat.getUsername()), StandardCharsets.UTF_8);
-        String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
-        ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
-        DoRequestUtil.request(request);
+        IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
+            String msg = URLEncoder.encode(param.getWelcomeTip().replace("{groupTitle}", chat.getTitle()).replace("{groupUserName}", chat.getUsername()), StandardCharsets.UTF_8);
+            String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
+            ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
+            DoRequestUtil.request(request);
+        });
     }
 
     @Override
-    public String getType() {
-        return "groupWelcome";
+    public GroupHandlerType getType() {
+        return GroupHandlerType.WELCOME;
     }
 
     @Override
@@ -91,5 +98,10 @@ public class GroupWelcomeHandler implements RobotGroupUpdatesHandler<GroupWelcom
             return null;
         }
         return JSON.parseObject(param, GroupWelcomeParam.class);
+    }
+
+    @Override
+    public boolean isOpen(long groupId) {
+        return groupFunctionService.isFunctionOpen(groupId, getType().type());
     }
 }

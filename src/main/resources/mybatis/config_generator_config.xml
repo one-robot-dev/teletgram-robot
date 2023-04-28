@@ -37,10 +37,6 @@
             <columnOverride column="update_time" javaType="Long" />
             <columnOverride column="create_time" javaType="Long" />
         </table>
-        <table tableName="log" domainObjectName="LogModel">
-            <columnOverride column="id" javaType="Long" />
-            <columnOverride column="create_time" javaType="Long" />
-        </table>
         <table tableName="group_info" domainObjectName="GroupInfoModel">
             <columnOverride column="group_id" javaType="Long" />
             <columnOverride column="update_time" javaType="Long" />
@@ -51,8 +47,8 @@
             <columnOverride column="update_time" javaType="Long" />
             <columnOverride column="create_time" javaType="Long" />
         </table>
-        <table tableName="group_reply" domainObjectName="GroupReplyModel">
-            <columnOverride column="group_id" javaType="Long" />
+        <table tableName="time_msg_task" domainObjectName="TimeMsgTaskModel">
+            <columnOverride column="id" javaType="Long" />
             <columnOverride column="update_time" javaType="Long" />
             <columnOverride column="create_time" javaType="Long" />
         </table>

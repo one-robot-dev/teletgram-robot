@@ -3,6 +3,7 @@ package com.example.demo.beans.handlerparam;
 import lombok.Data;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -14,7 +15,7 @@ public class UserSpeakParam {
 
     private String tipMsg;
 
-    private long receiveId;
+    private List<Long> receiveId;
 
     private int checkInterval;
 

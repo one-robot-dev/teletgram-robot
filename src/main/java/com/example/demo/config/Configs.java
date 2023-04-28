@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -35,13 +36,10 @@ public class Configs {
 
     public String getChatUrl;
 
+    @Value("${robot.token}")
     public String token;
 
     public int checkInterval;
-
-    public String userNameChangeMsg;
-
-    public Set<String> keFuSet;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -51,28 +49,19 @@ public class Configs {
 
     @PostConstruct
     private void init() {
-        //初始化通用配置
-        RecordModelExample example = new RecordModelExample();
-        example.createCriteria().andKeyIn(Arrays.asList("token", "getUpdatesUrl", "sendMsgUrl", "getChatUrl", "checkInterval", "userNameChangeMsg", "kefu"));
-        Map<String, String> config = recordModelMapper.selectByExample(example).stream().collect(Collectors.toMap(RecordModel::getKey, RecordModel::getValue));
-        token = config.get("token");
         if (StringUtils.isEmpty(token)) {
             logger.error("token:{} config error", token);
             throw new RuntimeException("token:{} config error");
         }
+        //初始化通用配置
+        RecordModelExample example = new RecordModelExample();
+        example.createCriteria().andKeyIn(Arrays.asList("getUpdatesUrl", "sendMsgUrl", "getChatUrl", "checkInterval"));
+        Map<String, String> config = recordModelMapper.selectByExample(example).stream().collect(Collectors.toMap(RecordModel::getKey, RecordModel::getValue));
         getUpdatesUrl = String.format(config.get("getUpdatesUrl"), token) + limit;
         sendMsgUrl = String.format(config.get("sendMsgUrl"), token);
         getChatUrl = String.format(config.get("getChatUrl"), token);
-        userNameChangeMsg = config.get("userNameChangeMsg");
         String interval = config.get("checkInterval");
         checkInterval = Math.max(5, StringUtils.isNumeric(interval) ? Integer.parseInt(interval) : 10) * 1000;
-        String keFu = config.get("kefu");
-        keFuSet = JSON.isValidArray(keFu) ? new HashSet<>(JSON.parseArray(keFu, String.class)) : new HashSet<>();
-        //初始化群功能的配置
-
-        //初始化关键词回复
-
-        //初始化
     }
 
     /**
@@ -82,12 +71,6 @@ public class Configs {
      */
     public void updateConfig(String key, String value) {
         switch (key) {
-            case "token":
-                sendMsgUrl = value.replace(token, value);
-                getUpdatesUrl = value.replace(token, value);
-                getChatUrl = value.replace(token, value);
-                token = value;
-                break;
             case "getUpdatesUrl":
                 getUpdatesUrl = String.format(value, token);
                 break;
@@ -97,14 +80,8 @@ public class Configs {
             case "getChatUrl":
                 getChatUrl = String.format(value, token);
                 break;
-            case "userNameChangeMsg":
-                userNameChangeMsg = value;
-                break;
             case "checkInterval":
                 checkInterval = Integer.parseInt(value);
-                break;
-            case "kefu":
-                keFuSet = JSON.isValidArray(value) ? new HashSet<>(JSON.parseArray(value, String.class)) : keFuSet;
                 break;
             default:
                 logger.warn("key:{}, value:{} no use ", key, value);

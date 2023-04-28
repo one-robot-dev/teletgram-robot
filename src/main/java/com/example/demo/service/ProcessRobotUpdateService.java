@@ -41,7 +41,7 @@ public class ProcessRobotUpdateService {
     private RecordModelMapper recordModelMapper;
 
     @Autowired
-    private FunctionSettingService functionSettingService;
+    private GroupFunctionService groupFunctionService;
 
     @Autowired
     private List<RobotUpdateHandler> handlers;
@@ -76,10 +76,8 @@ public class ProcessRobotUpdateService {
                 if (groupId != null) {
                     groupHandlers.forEach(handler -> {
                         try {
-                            if (functionSettingService.isFunctionOpen(groupId, handler.getType())) {
-                                String param = functionSettingService.getParam(groupId, handler.getType());
-                                handler.handle(update, handler.parseParam(param));
-                            }
+                            String param = groupFunctionService.getParam(groupId, handler.getType());
+                            handler.process(groupId, update, param);
                         } catch (Exception e) {
                             logger.error("group handle update error,data:{}", update, e);
                         }
