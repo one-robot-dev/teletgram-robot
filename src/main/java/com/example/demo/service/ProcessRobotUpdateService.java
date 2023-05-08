@@ -56,14 +56,15 @@ public class ProcessRobotUpdateService {
         lastCheckTime = System.currentTimeMillis();
         RecordModel recordModel = recordModelMapper.selectByPrimaryKey("lastUpdateId");
         String value = recordModel == null ? null : recordModel.getValue();
-        long lastUpdateId = StringUtils.isBlank(value) ? 0 : Integer.parseInt(value), oriLastUpdateId = lastUpdateId;
+        long lastUpdateId = StringUtils.isBlank(value) ? 0 : Integer.parseInt(value);
+        long maxUpdateId = 0;
         while (true) {
             List<Update> updates = getNewUpdate(lastUpdateId);
             if (updates == null || updates.isEmpty()) {
                 return;
             }
             for (Update update : updates) {
-                lastUpdateId = Math.max(lastUpdateId, update.getUpdateId());
+                maxUpdateId = Math.max(maxUpdateId, update.getUpdateId());
                 handlers.forEach(handler -> {
                     try {
                         handler.handle(update);
@@ -88,12 +89,12 @@ public class ProcessRobotUpdateService {
                 break;
             }
         }
-        if (lastUpdateId > oriLastUpdateId) {
+        if (maxUpdateId != 0 && maxUpdateId != lastUpdateId) {
             if (recordModel == null) {
                 recordModel = new RecordModel();
                 recordModel.setKey("lastUpdateId");
             }
-            recordModel.setValue(String.valueOf(lastUpdateId));
+            recordModel.setValue(String.valueOf(maxUpdateId));
             recordModelMapper.updateByPrimaryKey(recordModel);
         }
     }
