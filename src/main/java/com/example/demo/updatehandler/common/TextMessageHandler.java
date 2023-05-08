@@ -54,6 +54,15 @@ public class TextMessageHandler implements RobotUpdateHandler {
         if (from == null || from.isBot()) {
             return;
         }
+        if (!String.valueOf(from.getId()).equals(configs.owner)) {
+            IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
+                String msg = URLEncoder.encode("非管理员", StandardCharsets.UTF_8);
+                String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
+                ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
+                DoRequestUtil.request(request);
+            });
+            return;
+        }
         processText(chat, from, message.getText());
     }
 

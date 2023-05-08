@@ -67,7 +67,7 @@ public class UserSpeakTipHandler implements RobotGroupUpdatesHandler<UserSpeakPa
         //对配置的群进行提示
         param.getReceiveId().forEach(receiveId -> {
             IOLogicExecuteUtil.exeChatIOLogic(receiveId, () -> {
-                String msg = URLEncoder.encode(param.getTipMsg().replace("{groupTitle}", chat.getTitle()).replace("{groupUserName}", chat.getUsername()), StandardCharsets.UTF_8);
+                String msg = URLEncoder.encode(param.getTipMsg().replace("{groupTitle}", StringUtils.defaultString(chat.getTitle())).replace("{groupUserName}", StringUtils.defaultString(chat.getUsername())), StandardCharsets.UTF_8);
                 String urlParam = String.format("?chat_id=%d&text=%s", receiveId, msg);
                 ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
                 DoRequestUtil.request(request);

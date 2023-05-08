@@ -39,6 +39,9 @@ public class Configs {
     @Value("${robot.token}")
     public String token;
 
+    @Value("${robot.owner}")
+    public String owner;
+
     public int checkInterval;
 
     @Autowired

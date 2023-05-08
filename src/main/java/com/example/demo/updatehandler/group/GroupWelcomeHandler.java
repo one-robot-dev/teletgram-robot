@@ -80,7 +80,7 @@ public class GroupWelcomeHandler implements RobotGroupUpdatesHandler<GroupWelcom
         });
         //根据功能设置，提示欢迎语
         IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
-            String msg = URLEncoder.encode(param.getWelcomeTip().replace("{groupTitle}", chat.getTitle()).replace("{groupUserName}", chat.getUsername()), StandardCharsets.UTF_8);
+            String msg = URLEncoder.encode(param.getWelcomeTip().replace("{groupTitle}", StringUtils.defaultString(chat.getTitle())).replace("{groupUserName}", StringUtils.defaultString(chat.getUsername())), StandardCharsets.UTF_8);
             String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
             ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
             DoRequestUtil.request(request);
