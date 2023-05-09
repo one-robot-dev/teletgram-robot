@@ -1,5 +1,6 @@
 package com.example.demo.updatehandler.group;
 
+import com.alibaba.fastjson.JSONObject;
 import com.example.demo.beans.robotupdate.Chat;
 import com.example.demo.beans.robotupdate.Message;
 import com.example.demo.beans.robotupdate.Update;
@@ -58,7 +59,7 @@ public class GetGroupIdHandler implements RobotGroupUpdatesHandler<Object>{
     }
 
     @Override
-    public Object parseParam(String param) {
+    public Object parseParam(JSONObject param) {
         return null;
     }
 

@@ -1,6 +1,7 @@
 package com.example.demo.updatehandler.group;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.example.demo.beans.handlerparam.UserSpeakParam;
 import com.example.demo.beans.robotupdate.Chat;
 import com.example.demo.beans.robotupdate.Message;
@@ -83,11 +84,8 @@ public class UserSpeakTipHandler implements RobotGroupUpdatesHandler<UserSpeakPa
     }
 
     @Override
-    public UserSpeakParam parseParam(String param) {
-        if (StringUtils.isBlank(param)) {
-            return null;
-        }
-        return JSON.parseObject(param, UserSpeakParam.class);
+    public UserSpeakParam parseParam(JSONObject param) {
+        return param.toJavaObject(UserSpeakParam.class);
     }
 
     @Override

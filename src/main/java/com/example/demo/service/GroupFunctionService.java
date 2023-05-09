@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.example.demo.db.dao.GroupFunctionModelMapper;
 import com.example.demo.db.entity.GroupFunctionModel;
 import com.example.demo.db.entity.GroupFunctionModelExample;
@@ -39,9 +40,9 @@ public class GroupFunctionService {
         return model != null && model.getStatus() == 1;
     }
 
-    public String getParam(long groupId, GroupHandlerType type) {
+    public JSONObject getParam(long groupId, GroupHandlerType type) {
         GroupFunctionModel model = groupFunctionMap.getOrDefault(groupId, Collections.emptyMap()).get(type.type());
-        return model == null ? "" : model.getParam();
+        return model == null ? new JSONObject() : model.getParam();
     }
 
     public Collection<Long> getAllGroup() {

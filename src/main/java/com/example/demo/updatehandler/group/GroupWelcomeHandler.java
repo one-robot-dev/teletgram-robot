@@ -1,6 +1,7 @@
 package com.example.demo.updatehandler.group;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.example.demo.beans.handlerparam.GroupWelcomeParam;
 import com.example.demo.beans.robotupdate.*;
 import com.example.demo.config.Configs;
@@ -93,11 +94,8 @@ public class GroupWelcomeHandler implements RobotGroupUpdatesHandler<GroupWelcom
     }
 
     @Override
-    public GroupWelcomeParam parseParam(String param) {
-        if (StringUtils.isBlank(param)) {
-            return null;
-        }
-        return JSON.parseObject(param, GroupWelcomeParam.class);
+    public GroupWelcomeParam parseParam(JSONObject param) {
+        return param.toJavaObject(GroupWelcomeParam.class);
     }
 
     @Override

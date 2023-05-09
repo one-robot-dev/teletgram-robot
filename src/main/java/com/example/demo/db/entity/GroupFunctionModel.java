@@ -1,11 +1,12 @@
 package com.example.demo.db.entity;
 
+import com.alibaba.fastjson.JSONObject;
 import java.io.Serializable;
 
 public class GroupFunctionModel extends GroupFunctionModelKey implements Serializable {
     private Integer status;
 
-    private String param;
+    private JSONObject param;
 
     private Long createTime;
 
@@ -21,12 +22,12 @@ public class GroupFunctionModel extends GroupFunctionModelKey implements Seriali
         this.status = status;
     }
 
-    public String getParam() {
+    public JSONObject getParam() {
         return param;
     }
 
-    public void setParam(String param) {
-        this.param = param == null ? null : param.trim();
+    public void setParam(JSONObject param) {
+        this.param = param;
     }
 
     public Long getCreateTime() {

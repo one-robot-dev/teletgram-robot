@@ -1,6 +1,7 @@
 package com.example.demo.updatehandler.group;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.example.demo.beans.handlerparam.KeywordReplyParam;
 import com.example.demo.beans.robotupdate.Chat;
 import com.example.demo.beans.robotupdate.Message;
@@ -88,11 +89,8 @@ public class KeywordReplyHandler implements RobotGroupUpdatesHandler<KeywordRepl
     }
 
     @Override
-    public KeywordReplyParam parseParam(String param) {
-        if (StringUtils.isBlank(param)) {
-            return null;
-        }
-        return JSON.parseObject(param, KeywordReplyParam.class);
+    public KeywordReplyParam parseParam(JSONObject param) {
+        return param.toJavaObject(KeywordReplyParam.class);
     }
 
     @Override

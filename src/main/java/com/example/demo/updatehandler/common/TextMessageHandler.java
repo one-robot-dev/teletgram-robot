@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -54,20 +55,20 @@ public class TextMessageHandler implements RobotUpdateHandler {
         if (from == null || from.isBot()) {
             return;
         }
-        if (!String.valueOf(from.getId()).equals(configs.owner)) {
-            IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
-                String msg = URLEncoder.encode("非管理员", StandardCharsets.UTF_8);
-                String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
-                ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
-                DoRequestUtil.request(request);
-            });
-            return;
-        }
         processText(chat, from, message.getText());
     }
 
     private void processText(Chat chat, User from, String text) {
         if (StringUtils.isBlank(text)) {
+            return;
+        }
+        if (text.equals("/getSelfId")) {
+            IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
+                String msg = URLEncoder.encode("你的id是：" + from.getId(), StandardCharsets.UTF_8);
+                String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
+                ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
+                DoRequestUtil.request(request);
+            });
             return;
         }
         if (!JSON.isValidObject(text)) {
@@ -76,14 +77,26 @@ public class TextMessageHandler implements RobotUpdateHandler {
         JSONObject info = JSON.parseObject(text);
         String masterCmd = info.getString("masterCmd");
         String subCmd = info.getString("subCmd");
-        if (StringUtils.isEmpty(masterCmd)) {
-            return;
+        if (StringUtils.isNotEmpty(masterCmd) && StringUtils.isNotEmpty(subCmd)) {
+            configSet(from, chat, masterCmd, subCmd, info.getJSONObject("param"));
         }
-        if (StringUtils.isEmpty(subCmd)) {
-            return;
+    }
+
+    private void configSet(User from, Chat chat, String masterCmd, String subCmd, JSONObject param) {
+        if (StringUtils.isNotEmpty(configs.owner)) {
+            boolean isAdmin = Arrays.asList(configs.owner.split(",")).contains(String.valueOf(from.getId()));
+            if (!isAdmin) {
+                IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
+                    String msg = URLEncoder.encode("非管理员", StandardCharsets.UTF_8);
+                    String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
+                    ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
+                    DoRequestUtil.request(request);
+                });
+                return;
+            }
         }
         ApiResponse[] response = {null};
-        JSONObject param = Optional.ofNullable(info.getJSONObject("param")).orElse(new JSONObject());
+        param = Optional.ofNullable(param).orElse(new JSONObject());
         if ("groupFunction".equals(masterCmd)) {
             response[0] = groupFunctionController.executeCmd(subCmd, param);
         } else if ("config".equals(masterCmd)) {

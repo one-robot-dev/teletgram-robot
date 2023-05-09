@@ -44,6 +44,7 @@
         </table>
         <table tableName="group_function" domainObjectName="GroupFunctionModel">
             <columnOverride column="group_id" javaType="Long" />
+            <columnOverride column="param" javaType="com.alibaba.fastjson.JSONObject" />
             <columnOverride column="update_time" javaType="Long" />
             <columnOverride column="create_time" javaType="Long" />
         </table>

@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.example.demo.beans.response.UpdateResponse;
 import com.example.demo.beans.robotupdate.*;
 import com.example.demo.config.Configs;
@@ -77,7 +78,7 @@ public class ProcessRobotUpdateService {
                 if (groupId != null) {
                     groupHandlers.forEach(handler -> {
                         try {
-                            String param = groupFunctionService.getParam(groupId, handler.getType());
+                            JSONObject param = groupFunctionService.getParam(groupId, handler.getType());
                             handler.process(groupId, update, param);
                         } catch (Exception e) {
                             logger.error("group handle update error,data:{}", update, e);

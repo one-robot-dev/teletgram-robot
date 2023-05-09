@@ -1,5 +1,6 @@
 package com.example.demo.db.entity;
 
+import com.alibaba.fastjson.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -304,62 +305,62 @@ public class GroupFunctionModelExample {
             return (Criteria) this;
         }
 
-        public Criteria andParamEqualTo(String value) {
+        public Criteria andParamEqualTo(JSONObject value) {
             addCriterion("param =", value, "param");
             return (Criteria) this;
         }
 
-        public Criteria andParamNotEqualTo(String value) {
+        public Criteria andParamNotEqualTo(JSONObject value) {
             addCriterion("param <>", value, "param");
             return (Criteria) this;
         }
 
-        public Criteria andParamGreaterThan(String value) {
+        public Criteria andParamGreaterThan(JSONObject value) {
             addCriterion("param >", value, "param");
             return (Criteria) this;
         }
 
-        public Criteria andParamGreaterThanOrEqualTo(String value) {
+        public Criteria andParamGreaterThanOrEqualTo(JSONObject value) {
             addCriterion("param >=", value, "param");
             return (Criteria) this;
         }
 
-        public Criteria andParamLessThan(String value) {
+        public Criteria andParamLessThan(JSONObject value) {
             addCriterion("param <", value, "param");
             return (Criteria) this;
         }
 
-        public Criteria andParamLessThanOrEqualTo(String value) {
+        public Criteria andParamLessThanOrEqualTo(JSONObject value) {
             addCriterion("param <=", value, "param");
             return (Criteria) this;
         }
 
-        public Criteria andParamLike(String value) {
+        public Criteria andParamLike(JSONObject value) {
             addCriterion("param like", value, "param");
             return (Criteria) this;
         }
 
-        public Criteria andParamNotLike(String value) {
+        public Criteria andParamNotLike(JSONObject value) {
             addCriterion("param not like", value, "param");
             return (Criteria) this;
         }
 
-        public Criteria andParamIn(List<String> values) {
+        public Criteria andParamIn(List<JSONObject> values) {
             addCriterion("param in", values, "param");
             return (Criteria) this;
         }
 
-        public Criteria andParamNotIn(List<String> values) {
+        public Criteria andParamNotIn(List<JSONObject> values) {
             addCriterion("param not in", values, "param");
             return (Criteria) this;
         }
 
-        public Criteria andParamBetween(String value1, String value2) {
+        public Criteria andParamBetween(JSONObject value1, JSONObject value2) {
             addCriterion("param between", value1, value2, "param");
             return (Criteria) this;
         }
 
-        public Criteria andParamNotBetween(String value1, String value2) {
+        public Criteria andParamNotBetween(JSONObject value1, JSONObject value2) {
             addCriterion("param not between", value1, value2, "param");
             return (Criteria) this;
         }
