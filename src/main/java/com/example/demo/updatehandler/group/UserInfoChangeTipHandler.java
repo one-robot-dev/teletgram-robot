@@ -78,7 +78,7 @@ public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserIn
         } else {
             boolean haveUpdate = false;
             String dbFirstName = StringUtils.defaultIfEmpty(dbModel.getFirstName(), ""), dbLastName = StringUtils.defaultIfEmpty(dbModel.getLastName(), "");
-            String newFirstName = from.getFirstName(), newLastName = from.getLastName();
+            String newFirstName = StringUtils.defaultIfEmpty(from.getFirstName(), ""), newLastName = StringUtils.defaultIfEmpty(from.getLastName(), "");
             if (!dbFirstName.equals(newFirstName) || !dbLastName.equals(newLastName)) {
                 String newName = newFirstName + (StringUtils.isNotBlank(newLastName) ? " " + newLastName : "");
                 String oldName = dbFirstName + " " + (StringUtils.isNotBlank(dbLastName) ? " " + dbLastName : "");
