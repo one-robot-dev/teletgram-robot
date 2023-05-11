@@ -57,7 +57,7 @@ public class GroupWelcomeHandler implements RobotGroupUpdatesHandler<GroupWelcom
         }
         //玩家信息入库
         newMembers.forEach(user -> {
-            if(user.isBot()) {
+            if(user.getIsBot()) {
                 return;
             }
             UserInfoModelKey key = new UserInfoModelKey();

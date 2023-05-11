@@ -52,7 +52,7 @@ public class TextMessageHandler implements RobotUpdateHandler {
             return;
         }
         User from = message.getFrom();
-        if (from == null || from.isBot()) {
+        if (from == null || from.getIsBot()) {
             return;
         }
         processText(chat, from, message.getText());

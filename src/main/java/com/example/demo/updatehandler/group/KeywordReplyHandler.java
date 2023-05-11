@@ -49,7 +49,7 @@ public class KeywordReplyHandler implements RobotGroupUpdatesHandler<KeywordRepl
             return;
         }
         User from = message.getFrom();
-        if (from == null || from.isBot()) {
+        if (from == null || from.getIsBot()) {
             return;
         }
         if (StringUtils.isBlank(message.getText())) {

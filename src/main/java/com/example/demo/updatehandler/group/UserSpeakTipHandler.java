@@ -52,7 +52,7 @@ public class UserSpeakTipHandler implements RobotGroupUpdatesHandler<UserSpeakPa
             return;
         }
         User from = message.getFrom();
-        if (from == null || from.isBot()) {
+        if (from == null || from.getIsBot()) {
             return;
         }
         if (StringUtils.isBlank(message.getText())) {

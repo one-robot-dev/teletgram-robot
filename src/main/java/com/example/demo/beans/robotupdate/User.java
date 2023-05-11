@@ -16,4 +16,11 @@ public class User {
     private String userName;
     private boolean isPremium;
 
+    public void setIsBot(boolean isBot) {
+        this.isBot = isBot;
+    }
+
+    public boolean getIsBot() {
+        return this.isBot;
+    }
 }

@@ -57,7 +57,7 @@ public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserIn
             return;
         }
         User from = message.getFrom();
-        if (from == null || from.isBot()) {
+        if (from == null || from.getIsBot()) {
             return;
         }
         UserInfoModelKey key = new UserInfoModelKey();
