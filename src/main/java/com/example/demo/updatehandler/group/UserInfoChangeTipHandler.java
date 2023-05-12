@@ -86,7 +86,13 @@ public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserIn
                 dbModel.setLastName(from.getLastName());
                 //发送改名的提示
                 IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
-                    String msg = URLEncoder.encode(param.getChangeUserNameTip().replace("{new}", newName).replace("{old}", oldName), StandardCharsets.UTF_8);
+                    String tip = param.getChangeUserNameTip()
+                            .replace("{new}", newName)
+                            .replace("{old}", oldName)
+                            .replace("{groupTitle}", StringUtils.defaultString(chat.getTitle()))
+                            .replace("{groupUserName}", StringUtils.defaultString(chat.getUsername()))
+                            .replace("{userId}", String.valueOf(from.getId()));
+                    String msg = URLEncoder.encode(tip, StandardCharsets.UTF_8);
                     String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
                     ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
                     DoRequestUtil.request(request);
@@ -99,7 +105,13 @@ public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserIn
                 dbModel.setUserName(newUserName);
                 //发送改唯一名的提示
                 IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
-                    String msg = URLEncoder.encode(param.getChangeUserNameTip().replace("{new}", newUserName).replace("{old}", oldUserName), StandardCharsets.UTF_8);
+                    String tip = param.getChangeUserNameTip()
+                            .replace("{new}", newUserName)
+                            .replace("{old}", oldUserName)
+                            .replace("{groupTitle}", StringUtils.defaultString(chat.getTitle()))
+                            .replace("{groupUserName}", StringUtils.defaultString(chat.getUsername()))
+                            .replace("{userId}", String.valueOf(from.getId()));
+                    String msg = URLEncoder.encode(tip, StandardCharsets.UTF_8);
                     String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
                     ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
                     DoRequestUtil.request(request);

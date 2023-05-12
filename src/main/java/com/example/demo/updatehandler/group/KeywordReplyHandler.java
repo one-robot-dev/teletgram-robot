@@ -63,9 +63,13 @@ public class KeywordReplyHandler implements RobotGroupUpdatesHandler<KeywordRepl
         if (reply == null) {
             return;
         }
-        String msg = reply.getMsg().replace("{groupTitle}", chat.getTitle())
+        String msg = reply.getMsg()
+                .replace("{groupTitle}", StringUtils.defaultString(chat.getTitle()))
                 .replace("{groupUserName}", StringUtils.defaultString(chat.getUsername()))
-                .replace("{targetName}", StringUtils.defaultString(from.getFirstName()) + " " + StringUtils.defaultString(from.getLastName()));
+                .replace("{userFirstName}", StringUtils.defaultString(from.getFirstName()))
+                .replace("{userLastName}", StringUtils.defaultString(from.getLastName()))
+                .replace("{userName}", StringUtils.defaultString(from.getUserName()))
+                .replace("{userId}", String.valueOf(from.getId()));
         msg = URLEncoder.encode(msg, StandardCharsets.UTF_8);
         String urlParam;
         if (reply.isReplySpecMsg()) {
