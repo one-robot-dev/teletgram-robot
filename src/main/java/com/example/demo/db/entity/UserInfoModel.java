@@ -13,6 +13,8 @@ public class UserInfoModel extends UserInfoModelKey implements Serializable {
 
     private Long updateTime;
 
+    private Integer status;
+
     private static final long serialVersionUID = 1L;
 
     public String getUserName() {
@@ -53,5 +55,13 @@ public class UserInfoModel extends UserInfoModelKey implements Serializable {
 
     public void setUpdateTime(Long updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 }

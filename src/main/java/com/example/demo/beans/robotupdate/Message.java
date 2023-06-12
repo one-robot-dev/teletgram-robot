@@ -15,6 +15,7 @@ public class Message {
     private User from;
     private Chat chat;
     private List<User> newChatMembers;
+    private User leftChatMember;
     private String text;
     private int date;
 

@@ -1,7 +1,7 @@
 package com.example.demo.updatehandler.group;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.example.demo.beans.enums.GroupUserStatusType;
 import com.example.demo.beans.handlerparam.UserInfoChangeParam;
 import com.example.demo.beans.robotupdate.*;
 import com.example.demo.config.Configs;
@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets;
  * @date 2023/04/26 14:10
  */
 @Service
-public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserInfoChangeParam> {
+public class UserInfoRecordHandler implements RobotGroupUpdatesHandler<UserInfoChangeParam> {
 
     private UserInfoModelMapper userInfoModelMapper;
 
@@ -37,7 +37,7 @@ public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserIn
     @Autowired
     private Configs configs;
 
-    public UserInfoChangeTipHandler(UserInfoModelMapper userInfoModelMapper, Configs configs) {
+    public UserInfoRecordHandler(UserInfoModelMapper userInfoModelMapper, Configs configs) {
         this.userInfoModelMapper = userInfoModelMapper;
         this.configs = configs;
     }
@@ -72,9 +72,10 @@ public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserIn
             userInfoModel.setFirstName(from.getFirstName());
             userInfoModel.setLastName(from.getLastName());
             userInfoModel.setUserName(from.getUserName());
+            userInfoModel.setStatus(GroupUserStatusType.JOIN.id);
             userInfoModel.setCreateTime(now);
             userInfoModel.setUpdateTime(now);
-            userInfoModelMapper.insert(userInfoModel);
+            IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> userInfoModelMapper.insert(userInfoModel));
         } else {
             boolean haveUpdate = false;
             String dbFirstName = StringUtils.defaultIfEmpty(dbModel.getFirstName(), ""), dbLastName = StringUtils.defaultIfEmpty(dbModel.getLastName(), "");
@@ -84,43 +85,47 @@ public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserIn
                 String oldName = dbFirstName + " " + (StringUtils.isNotBlank(dbLastName) ? " " + dbLastName : "");
                 dbModel.setFirstName(from.getFirstName());
                 dbModel.setLastName(from.getLastName());
-                //发送改名的提示
-                IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
-                    String tip = param.getChangeUserNameTip()
-                            .replace("{new}", newName)
-                            .replace("{old}", oldName)
-                            .replace("{groupTitle}", StringUtils.defaultString(chat.getTitle()))
-                            .replace("{groupUserName}", StringUtils.defaultString(chat.getUsername()))
-                            .replace("{userId}", String.valueOf(from.getId()));
-                    String msg = URLEncoder.encode(tip, StandardCharsets.UTF_8);
-                    String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
-                    ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
-                    DoRequestUtil.request(request);
-                });
+                if (needTip(chat.getId())) {
+                    //发送改名的提示
+                    IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
+                        String tip = param.getChangeUserNameTip()
+                                .replace("{new}", newName)
+                                .replace("{old}", oldName)
+                                .replace("{groupTitle}", StringUtils.defaultString(chat.getTitle()))
+                                .replace("{groupUserName}", StringUtils.defaultString(chat.getUsername()))
+                                .replace("{userId}", String.valueOf(from.getId()));
+                        String msg = URLEncoder.encode(tip, StandardCharsets.UTF_8);
+                        String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
+                        ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
+                        DoRequestUtil.request(request);
+                    });
+                }
                 haveUpdate = true;
             }
             String oldUserName = StringUtils.defaultIfEmpty(dbModel.getUserName(), "");
             String newUserName = StringUtils.defaultIfEmpty(from.getUserName(), "");
             if (!oldUserName.equals(newUserName)) {
                 dbModel.setUserName(newUserName);
-                //发送改唯一名的提示
-                IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
-                    String tip = param.getChangeUserNameTip()
-                            .replace("{new}", newUserName)
-                            .replace("{old}", oldUserName)
-                            .replace("{groupTitle}", StringUtils.defaultString(chat.getTitle()))
-                            .replace("{groupUserName}", StringUtils.defaultString(chat.getUsername()))
-                            .replace("{userId}", String.valueOf(from.getId()));
-                    String msg = URLEncoder.encode(tip, StandardCharsets.UTF_8);
-                    String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
-                    ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
-                    DoRequestUtil.request(request);
-                });
+                if (needTip(chat.getId())) {
+                    //发送改唯一名的提示
+                    IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
+                        String tip = param.getChangeUserNameTip()
+                                .replace("{new}", newUserName)
+                                .replace("{old}", oldUserName)
+                                .replace("{groupTitle}", StringUtils.defaultString(chat.getTitle()))
+                                .replace("{groupUserName}", StringUtils.defaultString(chat.getUsername()))
+                                .replace("{userId}", String.valueOf(from.getId()));
+                        String msg = URLEncoder.encode(tip, StandardCharsets.UTF_8);
+                        String urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
+                        ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(configs.sendMsgUrl + urlParam), HttpMethod.GET);
+                        DoRequestUtil.request(request);
+                    });
+                }
                 haveUpdate = true;
             }
             if (haveUpdate) {
                 dbModel.setUpdateTime(now);
-                userInfoModelMapper.updateByPrimaryKey(dbModel);
+                IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> userInfoModelMapper.updateByPrimaryKey(dbModel));
             }
         }
     }
@@ -137,6 +142,10 @@ public class UserInfoChangeTipHandler implements RobotGroupUpdatesHandler<UserIn
 
     @Override
     public boolean isOpen(long groupId) {
+        return true;
+    }
+
+    private boolean needTip(long groupId) {
         return groupFunctionService.isFunctionOpen(groupId, getType().type());
     }
 }

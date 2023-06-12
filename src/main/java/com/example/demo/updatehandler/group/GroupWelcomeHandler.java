@@ -2,6 +2,7 @@ package com.example.demo.updatehandler.group;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.example.demo.beans.enums.GroupUserStatusType;
 import com.example.demo.beans.handlerparam.GroupWelcomeParam;
 import com.example.demo.beans.robotupdate.*;
 import com.example.demo.config.Configs;
@@ -60,29 +61,30 @@ public class GroupWelcomeHandler implements RobotGroupUpdatesHandler<GroupWelcom
             if(user.getIsBot()) {
                 return;
             }
-            UserInfoModelKey key = new UserInfoModelKey();
-            key.setGroupId(chat.getId());
-            key.setUserId(user.getId());
-            UserInfoModel model = userInfoModelMapper.selectByPrimaryKey(key);
-            long now = System.currentTimeMillis();
-            boolean insert = model == null;
-            if (insert) {
-                model = new UserInfoModel();
-                model.setGroupId(chat.getId());
-                model.setUserId(user.getId());
-                model.setCreateTime(now);
-            }
-            model.setFirstName(user.getFirstName());
-            model.setLastName(user.getLastName());
-            model.setUserName(user.getUserName());
-            model.setUpdateTime(now);
-            if (insert) {
-                userInfoModelMapper.insert(model);
-            } else {
-                userInfoModelMapper.updateByPrimaryKey(model);
-            }
-            //根据功能设置，提示欢迎语
             IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
+                UserInfoModelKey key = new UserInfoModelKey();
+                key.setGroupId(chat.getId());
+                key.setUserId(user.getId());
+                UserInfoModel model = userInfoModelMapper.selectByPrimaryKey(key);
+                long now = System.currentTimeMillis();
+                boolean insert = model == null;
+                if (insert) {
+                    model = new UserInfoModel();
+                    model.setGroupId(chat.getId());
+                    model.setUserId(user.getId());
+                    model.setCreateTime(now);
+                }
+                model.setFirstName(user.getFirstName());
+                model.setLastName(user.getLastName());
+                model.setUserName(user.getUserName());
+                model.setStatus(GroupUserStatusType.JOIN.id);
+                model.setUpdateTime(now);
+                if (insert) {
+                    userInfoModelMapper.insert(model);
+                } else {
+                    userInfoModelMapper.updateByPrimaryKey(model);
+                }
+                //根据功能设置，提示欢迎语
                 String tip = param.getWelcomeTip()
                         .replace("{groupTitle}", StringUtils.defaultString(chat.getTitle()))
                         .replace("{groupUserName}", StringUtils.defaultString(chat.getUsername()))

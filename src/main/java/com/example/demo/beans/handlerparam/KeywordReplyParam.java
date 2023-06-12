@@ -26,6 +26,8 @@ public class KeywordReplyParam {
         private String msg;
 
         private String replyMarkUp;
+
+        private Set<Long> limitUser = Collections.emptySet();
     }
 }
 

@@ -2,12 +2,15 @@ package com.example.demo.updatehandler.group;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.example.demo.beans.enums.GroupUserStatusType;
 import com.example.demo.beans.handlerparam.KeywordReplyParam;
 import com.example.demo.beans.robotupdate.Chat;
 import com.example.demo.beans.robotupdate.Message;
 import com.example.demo.beans.robotupdate.Update;
 import com.example.demo.beans.robotupdate.User;
 import com.example.demo.config.Configs;
+import com.example.demo.db.dao.UserInfoModelMapper;
+import com.example.demo.db.entity.UserInfoModelExample;
 import com.example.demo.service.GroupFunctionService;
 import com.example.demo.utils.DoRequestUtil;
 import com.example.demo.utils.iologic.IOLogicExecuteUtil;
@@ -22,6 +25,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.StringJoiner;
 
 
 /**
@@ -36,6 +40,9 @@ public class KeywordReplyHandler implements RobotGroupUpdatesHandler<KeywordRepl
 
     @Autowired
     private GroupFunctionService groupFunctionService;
+
+    @Autowired
+    private UserInfoModelMapper userMapper;
 
     @Override
     public void handle(Update data, KeywordReplyParam param) throws IOException {
@@ -63,25 +70,35 @@ public class KeywordReplyHandler implements RobotGroupUpdatesHandler<KeywordRepl
         if (reply == null) {
             return;
         }
-        String msg = reply.getMsg()
-                .replace("{groupTitle}", StringUtils.defaultString(chat.getTitle()))
-                .replace("{groupUserName}", StringUtils.defaultString(chat.getUsername()))
-                .replace("{userFirstName}", StringUtils.defaultString(from.getFirstName()))
-                .replace("{userLastName}", StringUtils.defaultString(from.getLastName()))
-                .replace("{userName}", StringUtils.defaultString(from.getUserName()))
-                .replace("{userId}", String.valueOf(from.getId()));
-        msg = URLEncoder.encode(msg, StandardCharsets.UTF_8);
-        String urlParam;
-        if (reply.isReplySpecMsg()) {
-            urlParam = String.format("?chat_id=%d&reply_to_message_id=%d&text=%s", chat.getId(), message.getMessageId(), msg);
-        } else {
-            urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
+        if (!reply.getLimitUser().isEmpty() && !reply.getLimitUser().contains(from.getId())) {
+            return;
         }
-        if (StringUtils.isNotBlank(reply.getReplyMarkUp())) {
-            urlParam = urlParam + "&reply_markup=" + URLEncoder.encode(reply.getReplyMarkUp(), StandardCharsets.UTF_8);
-        }
-        String url = configs.sendMsgUrl + urlParam;
         IOLogicExecuteUtil.exeChatIOLogic(chat.getId(), () -> {
+            String msg = reply.getMsg();
+            if (msg.contains("{@all}")) {
+                StringJoiner atAll = new StringJoiner(" @");
+                UserInfoModelExample example = new UserInfoModelExample();
+                example.createCriteria().andGroupIdEqualTo(chat.getId()).andStatusEqualTo(GroupUserStatusType.JOIN.id);
+                userMapper.selectByExample(example).forEach(u -> atAll.add(u.getUserName()));
+                msg = msg.replace("{@all}", " @" + atAll);
+            }
+            msg = msg.replace("{groupTitle}", StringUtils.defaultString(chat.getTitle()))
+                    .replace("{groupUserName}", StringUtils.defaultString(chat.getUsername()))
+                    .replace("{userFirstName}", StringUtils.defaultString(from.getFirstName()))
+                    .replace("{userLastName}", StringUtils.defaultString(from.getLastName()))
+                    .replace("{userName}", StringUtils.defaultString(from.getUserName()))
+                    .replace("{userId}", String.valueOf(from.getId()));
+            msg = URLEncoder.encode(msg, StandardCharsets.UTF_8);
+            String urlParam;
+            if (reply.isReplySpecMsg()) {
+                urlParam = String.format("?chat_id=%d&reply_to_message_id=%d&text=%s", chat.getId(), message.getMessageId(), msg);
+            } else {
+                urlParam = String.format("?chat_id=%d&text=%s", chat.getId(), msg);
+            }
+            if (StringUtils.isNotBlank(reply.getReplyMarkUp())) {
+                urlParam = urlParam + "&reply_markup=" + URLEncoder.encode(reply.getReplyMarkUp(), StandardCharsets.UTF_8);
+            }
+            String url = configs.sendMsgUrl + urlParam;
             ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(url), HttpMethod.GET);
             DoRequestUtil.request(request);
         });
